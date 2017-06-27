@@ -28,6 +28,6 @@ It's probably easier to digest as a diagram.  Each agent builds against it's own
 ![docker in docker](images/kube_dind.png)
 
 ## The result
-Is docker running on the agent, not accessing the host! :-)
+Each agent is talking to its own, isolated instance of docker :-)
 
 ![result](images/gocd.png)
