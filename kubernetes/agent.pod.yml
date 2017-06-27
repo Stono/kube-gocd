@@ -36,7 +36,7 @@ spec:
         - name: DOCKER_HOST
           value: 'tcp://127.0.0.1:2375'
         - name: GO_SERVER_URL
-          value: 'https://gocd-master:8154/go'
+          value: 'https://gocd-master-internal:8154/go'
         - name: AGENT_AUTO_REGISTER_KEY
           value: somethingunique 
         - name: AGENT_AUTO_REGISTER_RESOURCES
