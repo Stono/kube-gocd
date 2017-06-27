@@ -38,7 +38,8 @@ spec:
     name: agent
     targetPort: 8154
   selector:
-    app: gocd-master
+    app: master
+    tier: gocd
 ---
 apiVersion: v1
 kind: Service
@@ -51,4 +52,5 @@ spec:
     name: http
     targetPort: 8153
   selector:
-    app: gocd-master
+    app: master
+    tier: gocd
