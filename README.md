@@ -19,6 +19,23 @@ The idea on kubernetes is that your kubernetes pod has two containers, one is th
 
 Check out the kubernetes folder for examples.
 
+### docker-compose
+You can see how this works with docker-compose, by doing `docker-compose up -d`, waiting for gocd to boot and then going to `http://127.0.0.1:8153`.
+
+### kubernetes
+To deploy to kubernetes, do:
+ 
+  - cd kubernetes/
+	- kubectl apply -f master.pod.yml
+  - kubectl apply -f agent.pod.yml
+
+This will deploy:
+
+  - GoCD Server (17.6.0)
+	- GoCD Agent (with docker-in-docker) x2
+
+The default GoCD agent image doesn't have the docker binary installed, checkout the Dockerfile in this project to see how to inherit from that base image and add the docker binary, once you have done that on the agent, it'll talk to docker in docker via TLS.
+
 ## Shared volumes
 You'll notice that both in docker-compose and kubernetes, I share a volume (/godata) between docker-in-docker, and the agent.  The reason for this is because if your agent runs a job, which does say, `docker run --rm -it -v $PWD:/test centos:7 /bin/bash`, it'd actually mount `$PWD` from the dind container, rather than the agent.  By sharing this volume you can mount files from your build directory into the child container.
 
