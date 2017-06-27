@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gocd-agent-dind 
+spec:
+  volumes:
+  - name: build-data
+    emptyDir: {}
+  restartPolicy: Always
+  containers:
+  - name: dind 
+    securityContext:
+      privileged: true
+    image: docker:stable-dind
+    volumeMounts:
+    - name: build-data
+      mountPath: /godata 
+  - name: agent 
+    image: gocd/gocd-agent-centos-7:v17.6.0
+    volumeMounts:
+    - name: build-data
+      mountPath: /godata
+    env:
+    - name: DOCKER_HOST
+      value: 'tcp://127.0.0.1:2375'
