@@ -21,6 +21,7 @@ function start() {
 	tail -f /go/go-agent-bootstrapper.out.log &
 	tail_pid=$!
 
+	chown go:go /var/run/docker.sock
 	echo "Started (GoCD: $gocd_pid, Docker: $docker_pid, LogTail: $tail_pid)."
 }
 

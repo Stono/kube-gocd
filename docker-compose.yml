@@ -40,7 +40,7 @@ services:
     depends_on:
       - master
     environment:
-      - GO_SERVER_URL=https://gocd-master/go
+      - GO_SERVER_URL=https://master:8154/go
       - AGENT_AUTO_REGISTER_KEY=somethingunique
       - AGENT_AUTO_REGISTER_RESOURCES=docker
       - AGENT_AUTO_REGISTER_ENVIRONMENTS=docker
