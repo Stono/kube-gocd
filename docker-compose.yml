@@ -1,0 +1,47 @@
+version: '2'
+
+networks:
+  gocd:
+
+services:
+  nginx:
+    image: stono/docker-nginx-letsencrypt 
+    restart: always
+    networks:
+      gocd:
+        aliases:
+          - gocd-master
+    depends_on:
+      - master
+    volumes:
+      - ./config.js:/config/config.js
+    environment:
+      - LETSENCRYPT=false
+    ports:
+      - 443:443
+
+  master:
+    image: gocd/gocd-server:v17.6.0
+    restart: always
+    networks:
+      gocd:
+    environment:
+      - AGENT_AUTO_REGISTER_KEY=somethingunique
+      - MSG_TIME=0
+
+  agent:
+    image: stono/gocd-agent-dind
+    hostname: agent
+    build: .
+    restart: always
+    privileged: true
+    networks:
+      gocd:
+    depends_on:
+      - master
+    environment:
+      - GO_SERVER_URL=https://gocd-master/go
+      - AGENT_AUTO_REGISTER_KEY=somethingunique
+      - AGENT_AUTO_REGISTER_RESOURCES=docker
+      - AGENT_AUTO_REGISTER_ENVIRONMENTS=docker
+      - AGENT_AUTO_REGISTER_HOSTNAME
