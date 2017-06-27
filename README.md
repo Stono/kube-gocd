@@ -26,13 +26,13 @@ You can see how this works with docker-compose, by doing `docker-compose up -d`,
 To deploy to kubernetes, do:
  
   - cd kubernetes/
-	- kubectl apply -f master.pod.yml
+  - kubectl apply -f master.pod.yml
   - kubectl apply -f agent.pod.yml
 
 This will deploy:
 
   - GoCD Server (17.6.0)
-	- GoCD Agent (with docker-in-docker) x2
+  - GoCD Agent (with docker-in-docker) x2
 
 The default GoCD agent image doesn't have the docker binary installed, checkout the Dockerfile in this project to see how to inherit from that base image and add the docker binary, once you have done that on the agent, it'll talk to docker in docker via TLS.
 
