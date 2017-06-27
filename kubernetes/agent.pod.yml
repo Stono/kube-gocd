@@ -1,25 +1,45 @@
-apiVersion: v1
-kind: Pod
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  name: gocd-agent-dind 
+  name: gocd-agent
 spec:
-  volumes:
-  - name: build-data
-    emptyDir: {}
-  restartPolicy: Always
-  containers:
-  - name: dind 
-    securityContext:
-      privileged: true
-    image: docker:stable-dind
-    volumeMounts:
-    - name: build-data
-      mountPath: /godata 
-  - name: agent 
-    image: gocd/gocd-agent-centos-7:v17.6.0
-    volumeMounts:
-    - name: build-data
-      mountPath: /godata
-    env:
-    - name: DOCKER_HOST
-      value: 'tcp://127.0.0.1:2375'
+  replicas: 2
+  revisionHistoryLimit: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: agent
+        tier: gocd
+    spec:
+      volumes:
+      - name: build-data
+        emptyDir: {}
+      restartPolicy: Always
+      containers:
+      - name: dind 
+        securityContext:
+          privileged: true
+        image: docker:stable-dind
+        volumeMounts:
+        - name: build-data
+          mountPath: /godata 
+      - name: agent 
+        image: gocd/gocd-agent-centos-7:v17.6.0
+        volumeMounts:
+        - name: build-data
+          mountPath: /godata
+        env:
+        - name: DOCKER_HOST
+          value: 'tcp://127.0.0.1:2375'
+        - name: GO_SERVER_URL
+          value: 'https://gocd-master:8154/go'
+        - name: AGENT_AUTO_REGISTER_KEY
+          value: somethingunique 
+        - name: AGENT_AUTO_REGISTER_RESOURCES
+          value: docker 
+        - name: AGENT_AUTO_REGISTER_ENVIRONMENTS
+          value: docker 

@@ -1,0 +1,54 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gocd-master
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: master
+        tier: gocd
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: agent 
+        image: gocd/gocd-server:v17.6.0
+        env:
+        - name: AGENT_AUTO_REGISTER_KEY
+          value: somethingunique
+        - name: MSG_TIME
+          value: '0'
+        ports:
+        - containerPort: 8153
+        - containerPort: 8154
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gocd-master-internal
+spec:
+  ports:
+  - port: 8154
+    name: agent
+    targetPort: 8154
+  selector:
+    app: gocd-master
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gocd-master-external
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    name: http
+    targetPort: 8153
+  selector:
+    app: gocd-master
