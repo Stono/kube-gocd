@@ -92,7 +92,7 @@ function validate_config {
 	export_variable "GCP_REGISTRY" "$GCP_REGISTRY_HOST/$(gcloud config get-value project 2>/dev/null | xargs)"
 	export_variable "SECRET_NAME" "kube-gocd"
 
-  echo "Checking configuration...: "
+  echo "Checking configuration..."
   echo " + GoCD username: $GO_USERNAME"
   echo " + GoCD password: $GO_PASSWORD"
   echo " + Agent registration key: $AGENT_AUTO_REGISTER_KEY"
