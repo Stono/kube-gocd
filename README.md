@@ -1,7 +1,11 @@
 # GoCD on Kubernetes (GKE) with Docker (in docker) 
+An evolution of my journey of GoCD on Kubernetes, for building and deploying container based services.
 
 ## History
-[Previously](https://github.com/Stono/ci-in-a-box), I had been running GoCD agents in docker containers, and then volume mounting the docker socket from the host, so that the agents could build and deploy docker containers.
+[ci-in-a-box](https://github.com/Stono/ci-in-a-box) was the first iteration of a "click, deploy and off you go" solution to GoCD on kubernetes.  However, through using it for the past year there were some learnings, and some aspects I wanted to change.  Along with the massive change to GoCDs base images with go 17.3.0, I decided to start afresh.
+
+### The Problems
+I had been running GoCD agents in docker containers, and then volume mounting the docker socket from the host, so that the agents could build and deploy docker containers.
 
 This had multiple problems:
  
@@ -11,20 +15,21 @@ This had multiple problems:
   - Things like volume mounts don't work, they'd be mounting from your agents host machine, rather than from the agents filesystem
   - We are limited to the version of docker on the host, which for Google Container Engine (managed kubernetes) is quite old, so we're missing cool features
 
-### Docker in Docker 
+#### Docker in Docker 
 So I started looking at [docker in docker](https://hub.docker.com/_/docker/) and thought it would be nice if my gocd agents ran their own docker daemon, totally isolated, no reason to have access to the host they're running on.
 
 The idea on kubernetes is that your kubernetes agent pod has two containers, one is the gocd-agent itself, the other is docker-in-docker, they scale linearly, so each agent gets its own unique docker daemon.  The gocd-agent talks to the docker daemon via TCP.
 
-Docker in Docker carries its own problems, theres a good blog post on [here](https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/), however the dind image is now officially supported, albeit a little slower (as you're doing filesystems on top of filesystems).
+Docker in Docker carries its own problems, theres a good blog post on [here](https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/), however the dind image is now officially supported and most of the issues have been mitigated.  The only downside I can see now is its a little slower (as you're doing filesystems on top of filesystems), but that's a fair trade in exchange for a more secure setup.
 
-#### In a diagram
 It's probably easier to digest as a diagram.  Each agent builds against it's own isolated docker, and then pushes the build artifact up to the container registry.
 
 ![docker in docker](images/kube_dind.png)
 
-### Shared volumes
-You'll notice that both in docker-compose and kubernetes, I share a volume (/godata) between docker-in-docker, and the agent.  The reason for this is because if your agent runs a job, which does say, `docker run --rm -it -v $PWD:/test centos:7 /bin/bash`, it'd actually mount `$PWD` from the dind container, rather than the agent.  By sharing this volume you can mount files from your build directory into the child container.
+#### Shared volumes
+If you've ever run a CI agent inside a docker container, and your build job has needed to volume mount data from the agents working directory - you'll have found that it doesn't work.  This is because you're actually acting on the daemon on the host system, so you're volume mount a directory from the parent, rather than the agent.
+
+This setup addresses that by mutually mounting `/godata` between the go agent, and docker in docker containers.
 
 ## Running/Deploying
 The idea here is to get you up and running as quickly as possible with GoCD.  
