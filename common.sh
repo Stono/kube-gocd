@@ -32,8 +32,8 @@ enforce_arg "GO_USERNAME" "Username for GoCD master"
 enforce_arg "GO_PASSWORD" "Password for GoCD master"
 enforce_arg "AGENT_AUTO_REGISTER_KEY" "Unique key that agents use to self register"
 enforce_arg "KUBE_NAMESPACE" "The namespace to deploy GoCD to"
-enforce_arg "GCP_REGISTRY" "The registry we should store the bespoke images in"
 
+export_variable "GCP_REGISTRY" "$GCP_REGISTRY_HOST/$(gcloud config get-value project 2>/dev/null | xargs)"
 export_variable "SECRET_NAME" "kube-gocd"
 
 function k() {
