@@ -9,6 +9,7 @@ This had multiple problems:
   - Running on kubernetes, you had access to the underlying kubernetes machine and could destroy your cluster quite easily
   - Agents weren't isolated, so a build job on one agent could affect a build job on another
   - Things like volume mounts don't work, they'd be mounting from your agents host machine, rather than from the agents filesystem
+  - We are limited to the version of docker on the host, which for Google Container Engine (managed kubernetes) is quite old, so we're missing cool features
 
 ### Docker in Docker 
 So I started looking at [docker in docker](https://hub.docker.com/_/docker/) and thought it would be nice if my gocd agents ran their own docker daemon, totally isolated, no reason to have access to the host they're running on.
