@@ -22,7 +22,7 @@ function enforce_arg {
 
   if [ -z "$ARG_VALUE" ]; then
     echo " - $ARG_NAME ($ARG_DESC) is a required value.  Please ensure it is set in go.env "
-		exit 1 
+    exit 1 
   else
     export_variable "$ARG_NAME" "$ARG_VALUE"
     return;
@@ -37,24 +37,24 @@ export_variable "GCP_REGISTRY" "$GCP_REGISTRY_HOST/$(gcloud config get-value pro
 export_variable "SECRET_NAME" "kube-gocd"
 
 function k() {
-	kubectl --namespace=$KUBE_NAMESPACE $*
+  kubectl --namespace=$KUBE_NAMESPACE $*
 }
 
 function tag() {
-	docker tag stono/$1:latest $GCP_REGISTRY/$1:latest 
+  docker tag stono/$1:latest $GCP_REGISTRY/$1:latest 
 }
 
 function push() {
-	gcloud docker -- push $GCP_REGISTRY/$1:latest 
+  gcloud docker -- push $GCP_REGISTRY/$1:latest 
 }
 
 function tag_and_push() {
-	tag $1
-	push $1
+  tag $1
+  push $1
 }
 
 function apply() {
-	envsubst < $1 | kubectl --namespace=$KUBE_NAMESPACE apply -f -
+  envsubst < $1 | kubectl --namespace=$KUBE_NAMESPACE apply -f -
 }
 
 function yesno {
@@ -70,14 +70,22 @@ function yesno {
 }
 
 function confirm {
-  read -r -p "Do you want to continue? [y/N] " response
-  case "$response" in
-    [yY][eE][sS]|[yY])
-      return; 
-      ;;
-    *)
-      echo "Aborting."
-      exit 1
-      ;;
-  esac
+  if ! yesno; then
+    echo "Aborting."
+    exit 1
+  fi
+}
+
+function validate_config {
+  echo "Configuration: "
+  echo " - GoCD username: $GO_USERNAME"
+  echo " - GoCD password: $GO_PASSWORD"
+  echo " - Agent registration key: $AGENT_AUTO_REGISTER_KEY"
+  echo " - GCP registry: $GCP_REGISTRY"
+  echo " - Kubernetes namespace: $KUBE_NAMESPACE"
+  echo ""
+
+  echo "Check, double check, and triple check the above configuration."
+  echo "If you're not happy, quit, and edit go.env"
+  confirm
 }

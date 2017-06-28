@@ -1,5 +1,6 @@
 #!/bin/bash
 source common.sh
+validate_config
 set +e 
 
 echo "This action will remove all GoCD deployments!"
