@@ -27,7 +27,9 @@ It's probably easier to digest as a diagram.  Each agent builds against it's own
 You'll notice that both in docker-compose and kubernetes, I share a volume (/godata) between docker-in-docker, and the agent.  The reason for this is because if your agent runs a job, which does say, `docker run --rm -it -v $PWD:/test centos:7 /bin/bash`, it'd actually mount `$PWD` from the dind container, rather than the agent.  By sharing this volume you can mount files from your build directory into the child container.
 
 ## Running/Deploying
-The idea here is to get you up and running with GoCD as quickly as possible with GoCD.  Edit the `go.env` file to meet your requirements and then start it up using compose, or kubernetes.
+The idea here is to get you up and running as quickly as possible with GoCD.  
+
+Simply edit the `go.env` file to meet your requirements and then start it up using compose, or deploy to kubernetes.
 
 Both options will run/deploy:
 
@@ -54,11 +56,14 @@ To deploy to that cluster, do:
   - Make sure you kubectl is configured to point at the cluster you wish to target
   - ./kubernetes-deploy.sh
 
+Wait for GoCD to boot, and then access it on the service ip.  You can find the IP with `$(kubectl get services | grep master | awk '{print $2}')`.
+
+You can remove GoCD from kubernetes by running `./kubernetes-remove.sh`
+
+#### Persistence
 Kubernetes makes use of StatefulSets to persist your agent, and server configuration.
 
 **WARNING**: The PersistentVolumeClaims only live as long as your kubernetes cluster.  Should you blow away your kubernetes cluster you **will** destroy your gocd config and history too.  Make sure you have a backup strategy in place.
-
-You can remove it from kubernetes by running `./kubernetes-remove.sh`
 
 ## The result
 Each agent is talking to its own, isolated instance of docker :-)
