@@ -57,6 +57,8 @@ Kubernetes makes use of StatefulSets to persist your agent, and server configura
 
 **WARNING**: The PersistentVolumeClaims only live as long as your kubernetes cluster.  Should you blow away your kubernetes cluster you **will** destroy your gocd config and history too.  Make sure you have a backup strategy in place.
 
+You can remove it from kubernetes by running `./kubernetes-remove.sh`
+
 ## The result
 Each agent is talking to its own, isolated instance of docker :-)
 
