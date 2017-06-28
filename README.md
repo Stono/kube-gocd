@@ -56,7 +56,7 @@ To run using docker-compose, do:
 Wait for GoCD to boot and then go to `http://127.0.0.1:8153`
 
 ### Kubernetes (on Google Container Engine)
-I am presuming you have already deployed a kubernetes cluster on Google Container Engine.
+I am presuming you have already deployed a kubernetes cluster on Google Container Engine.  If you haven't, head on over to the `terraform/dev` folder, and do `terraform apply`, that'll build you a shiny new cluster.  Make sure you then update your kubectl command line with the credentials for you new cluster with `gcloud container clusters get-credentials [cluster name]-dev`
 
 To deploy to that cluster, do:
  
