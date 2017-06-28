@@ -1,10 +1,14 @@
-apiVersion: apps/v1beta1
-kind: StatefulSet
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   name: gocd-master
 spec:
-  serviceName: gocd-master-headless
   replicas: 1
+  revisionHistoryLimit: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
   selector:
     matchLabels:
       app: master
@@ -15,46 +19,30 @@ spec:
         app: master
         tier: gocd
     spec:
-      securityContext:
-        fsGroup: 999
       restartPolicy: Always
       containers:
       - name: agent 
-        image: $GCP_REGISTRY/kube-gocd-master:latest 
+        image: eu.gcr.io/peopledata-product-team/kube-gocd-master:latest 
         imagePullPolicy: Always
-        volumeMounts:
-        - name: gocd-master-data
-          mountPath: /godata 
         env:
         - name: AGENT_AUTO_REGISTER_KEY
           valueFrom:
             secretKeyRef:
-              name: $SECRET_NAME 
+              name: kube-gocd 
               key: agent_key
-        - name: GO_USERNAME
+        - name: GOCD_USER
           valueFrom:
             secretKeyRef:
-              name: $SECRET_NAME
+              name: kube-gocd
               key: user
-        - name: GO_PASSWORD
+        - name: GOCD_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: $SECRET_NAME 
+              name: kube-gocd 
               key: pass
         ports:
         - containerPort: 8153
         - containerPort: 8154
-  volumeClaimTemplates:
-  - metadata:
-      name: gocd-master-data
-      labels:
-        app: master
-        tier: gocd 
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 75Gi
 ---
 apiVersion: v1
 kind: Service

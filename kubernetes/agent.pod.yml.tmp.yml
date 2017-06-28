@@ -1,10 +1,14 @@
-apiVersion: apps/v1beta1
-kind: StatefulSet
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   name: gocd-agent
 spec:
-  serviceName: gocd-agent-headless
   replicas: 2
+  revisionHistoryLimit: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
   selector:
     matchLabels:
       app: agent
@@ -15,8 +19,9 @@ spec:
         app: agent
         tier: gocd
     spec:
-      securityContext:
-        fsGroup: 999
+      volumes:
+      - name: build-data
+        emptyDir: {}
       restartPolicy: Always
       containers:
       - name: dind 
@@ -25,13 +30,13 @@ spec:
         image: docker:stable-dind
         imagePullPolicy: Always
         volumeMounts:
-        - name: gocd-agent-data
+        - name: build-data
           mountPath: /godata 
       - name: agent 
-        image: $GCP_REGISTRY/kube-gocd-agent:latest 
+        image: eu.gcr.io/peopledata-product-team/kube-gocd-agent:latest 
         imagePullPolicy: Always
         volumeMounts:
-        - name: gocd-agent-data 
+        - name: build-data
           mountPath: /godata
         env:
         - name: DOCKER_HOST
@@ -41,20 +46,9 @@ spec:
         - name: AGENT_AUTO_REGISTER_KEY
           valueFrom:
             secretKeyRef:
-              name: $SECRET_NAME
+              name: kube-gocd
               key: agent_key
         - name: AGENT_AUTO_REGISTER_RESOURCES
-          value: $AGENT_AUTO_REGISTER_RESOURCES 
+          value:  
         - name: AGENT_AUTO_REGISTER_ENVIRONMENTS
-          value: $AGENT_AUTO_REGISTER_ENVIRONMENTS 
-  volumeClaimTemplates:
-  - metadata:
-      name: gocd-agent-data
-      labels:
-        app: agent
-        tier: gocd 
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 50Gi
+          value:  

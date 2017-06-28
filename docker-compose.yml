@@ -5,18 +5,26 @@ networks:
 
 services:
   master:
-    image: gocd/gocd-server:v17.6.0
+    image: stono/kube-gocd-master
     restart: always
     networks:
       gocd:
+        aliases:
+          - gocd-master-internal
     ports: 
       - 8153:8153
-    environment:
-      - AGENT_AUTO_REGISTER_KEY=somethingunique
-      - MSG_TIME=0
+    env_file:
+      - go.env
+
+  master-cron:
+    image: stono/kube-gocd-master-cron 
+    restart: always
+    network_mode: 'service:master'
+    env_file:
+      - go.env
 
   agent:
-    image: gocd/gocd-agent-centos-7:v17.6.0 
+    image: stono/kube-gocd-agent
     restart: always
     networks:
       gocd:
@@ -24,13 +32,8 @@ services:
       - master
     volumes:
       - build_data:/godata
-    environment:
-      - GO_SERVER_URL=https://master:8154/go
-      - AGENT_AUTO_REGISTER_KEY=somethingunique
-      - AGENT_AUTO_REGISTER_RESOURCES=docker
-      - AGENT_AUTO_REGISTER_ENVIRONMENTS=docker
-      - AGENT_AUTO_REGISTER_HOSTNAME
-      - DOCKER_HOST=tcp://127.0.0.1:2375
+    env_file:
+      - go.env
 
   dind:
     image: docker:stable-dind
