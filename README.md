@@ -14,7 +14,7 @@ This had multiple problems:
 ### Docker in Docker 
 So I started looking at [docker in docker](https://hub.docker.com/_/docker/) and thought it would be nice if my gocd agents ran their own docker daemon, totally isolated, no reason to have access to the host they're running on.
 
-The idea on kubernetes is that your kubernetes agent pod has two containers, one is the gocd-agent itself, the other is docker-in-docker, they scale linearly, so each agent gets its own unique docker daemon.  The gocd-agent talks to the docker daemon via TLS.
+The idea on kubernetes is that your kubernetes agent pod has two containers, one is the gocd-agent itself, the other is docker-in-docker, they scale linearly, so each agent gets its own unique docker daemon.  The gocd-agent talks to the docker daemon via TCP.
 
 Docker in Docker carries its own problems, theres a good blog post on [here](https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/), however the dind image is now officially supported, albeit a little slower (as you're doing filesystems on top of filesystems).
 
