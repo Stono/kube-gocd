@@ -1,6 +1,5 @@
 #!/bin/bash
 source common.sh
-validate_config
 
 if [ ! "$1" = "--deploy-only" ]; then
   docker-compose build

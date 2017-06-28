@@ -1,13 +1,5 @@
 #!/bin/bash
 set -e
-source go.env
-
-# required commands: 
-# - envsubst
-# - gcloud
-# - kubectl
-# - docker
-# - docker-compose
 
 function export_variable {
   ARG_NAME=$1
@@ -28,13 +20,6 @@ function enforce_arg {
     return;
   fi
 }
-enforce_arg "GO_USERNAME" "Username for GoCD master"
-enforce_arg "GO_PASSWORD" "Password for GoCD master"
-enforce_arg "AGENT_AUTO_REGISTER_KEY" "Unique key that agents use to self register"
-enforce_arg "KUBE_NAMESPACE" "The namespace to deploy GoCD to"
-
-export_variable "GCP_REGISTRY" "$GCP_REGISTRY_HOST/$(gcloud config get-value project 2>/dev/null | xargs)"
-export_variable "SECRET_NAME" "kube-gocd"
 
 function k() {
   kubectl --namespace=$KUBE_NAMESPACE $*
@@ -61,9 +46,11 @@ function yesno {
   read -r -p "Do you want to continue? [y/N] " response
   case "$response" in
     [yY][eE][sS]|[yY])
+			echo ""
       return 0; 
       ;;
     *)
+			echo ""
       return 1
       ;;
   esac
@@ -76,16 +63,48 @@ function confirm {
   fi
 }
 
+function command_check {
+  if ! type "$1" &> /dev/null; then
+    echo " - $1"
+    echo "You need $1 installed, please get it and try again"
+    exit 1
+  else
+    echo " + $1"
+  fi
+}
+
+function validate_requirements {
+	echo "Checking CLI requirements..."
+	command_check "envsubst"
+	command_check "gcloud"
+	command_check "kubectl"
+	command_check "docker"
+	command_check "docker-compose"
+}
+
 function validate_config {
-  echo "Configuration: "
-  echo " - GoCD username: $GO_USERNAME"
-  echo " - GoCD password: $GO_PASSWORD"
-  echo " - Agent registration key: $AGENT_AUTO_REGISTER_KEY"
-  echo " - GCP registry: $GCP_REGISTRY"
-  echo " - Kubernetes namespace: $KUBE_NAMESPACE"
+	source go.env
+	enforce_arg "GO_USERNAME" "Username for GoCD master"
+	enforce_arg "GO_PASSWORD" "Password for GoCD master"
+	enforce_arg "AGENT_AUTO_REGISTER_KEY" "Unique key that agents use to self register"
+	enforce_arg "KUBE_NAMESPACE" "The namespace to deploy GoCD to"
+
+	export_variable "GCP_REGISTRY" "$GCP_REGISTRY_HOST/$(gcloud config get-value project 2>/dev/null | xargs)"
+	export_variable "SECRET_NAME" "kube-gocd"
+
+  echo "Checking configuration...: "
+  echo " + GoCD username: $GO_USERNAME"
+  echo " + GoCD password: $GO_PASSWORD"
+  echo " + Agent registration key: $AGENT_AUTO_REGISTER_KEY"
+  echo " + GCP registry: $GCP_REGISTRY"
+  echo " + Kubernetes namespace: $KUBE_NAMESPACE"
   echo ""
 
   echo "Check, double check, and triple check the above configuration."
   echo "If you're not happy, quit, and edit go.env"
   confirm
 }
+
+validate_requirements
+echo ""
+validate_config
