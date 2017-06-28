@@ -19,7 +19,7 @@ The idea on kubernetes is that your kubernetes agent pod has two containers, one
 Docker in Docker carries its own problems, theres a good blog post on [here](https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/), however the dind image is now officially supported, albeit a little slower (as you're doing filesystems on top of filesystems).
 
 #### In a diagram
-It's probably easier to digest as a diagram.  Each agent builds against it's own docker, and pushes up to a registry, no more `-v /var/run/docker.sock:/var/run/docker.sock` on your agents.
+It's probably easier to digest as a diagram.  Each agent builds against it's own isolated docker, and then pushes the build artifact up to the container registry.
 
 ![docker in docker](images/kube_dind.png)
 
@@ -36,7 +36,10 @@ Both options will run/deploy:
   - GoCD Server (17.6.0)
   - GoCD Agent (with docker-in-docker) 
 
-## Customising your agent
+### Authentication
+You've probably noticed `GO_USERNAME` and `GO_PASSWORD` in `go.env`.  These values will be written to `/etc/go-users` on the GoCD server using `htpasswd`.  You will need to enable the authentication the first time you open GoCD by going to `/go/admin/security/auth_configs`.
+
+### Customising your agent
 In both situations, we build custom agent and master images - inheriting from the official GoCD images.  If you want to make changes to your agent, simple edit `agent/Dockerfile`
 
 ### docker-compose
@@ -66,6 +69,6 @@ Kubernetes makes use of StatefulSets to persist your agent, and server configura
 **WARNING**: The PersistentVolumeClaims only live as long as your kubernetes cluster.  Should you blow away your kubernetes cluster you **will** destroy your gocd config and history too.  Make sure you have a backup strategy in place.
 
 ## The result
-Each agent is talking to its own, isolated instance of docker :-)
+No more `-v /var/run/docker.sock:/var/run/docker.sock` on your agents! 
 
 ![result](images/gocd.png)
